@@ -128,28 +128,29 @@ CREATE TABLE producto
     CONSTRAINT PK_id_producto PRIMARY KEY (id_producto)
 ); 
 
--->TABLAS QUE HAY QUE REVISAR PARA AÑADIR CATEGORIA 
+-->TABLA DE COMPUTACION: llave primaria id y llave foranea id_producto de producto
 CREATE TABLE computacion
 (
-    id INT NOT NULL IDENTITY(1,1),
+    id INT NOT NULL,
     gama VARCHAR(30) NOT NULL,
     CONSTRAINT PK_id_computacion PRIMARY KEY (id)
 );
 
+-->TABLA DE TECNOLOGIA: subclase de producto, llave primaria id, llave foranea id_producto de producto
 CREATE TABLE tecnologia
 (
-    id INT NOT NULL IDENTITY(1,1),
+    id INT NOT NULL,
     resistencia VARCHAR(30) NOT NULL,
     CONSTRAINT PK_id_tecnologia PRIMARY KEY (id)
 );
 
+-->TABLE DE LINEA BLANCA: subclase de producto, llave primaria id, llave foranea id_producto de producto
 CREATE TABLE linea_blanca
 (
-    id INT NOT NULL IDENTITY(1,1),
-    demensiones VARCHAR(30) NOT NULL,
+    id INT NOT NULL,
+    dimensiones VARCHAR(30) NOT NULL,
     CONSTRAINT PK_id_linea_blanca PRIMARY KEY (id)
 ); 
-
 
 -->TABLA DE PEDIDOS: llave primaria id_pedido, llave foranea cedula de cliente, llave foranea distrito de distritos
 CREATE TABLE pedido
@@ -171,6 +172,10 @@ REFERENCES cliente(cedula);
 ALTER TABLE pedido
 ADD CONSTRAINT FK_pedido_distrito FOREIGN KEY (distrito)
 REFERENCES distritos(id_distrito);
+
+ALTER TABLE pedido
+ADD CONSTRAINT FK_estado_pedido FOREIGN KEY (estado)
+REFERENCES estado_pedido(id_estado_pedido);
 
 -->TABLA DE DETALLES_PEDIDO: llave primaria id_pedido, llave foranea id_pedido de pedido
 CREATE TABLE detalles_pedido
@@ -243,7 +248,7 @@ ALTER TABLE compra_producto
 ADD CONSTRAINT FK_producto_compra FOREIGN KEY (id_producto)
 REFERENCES producto(id_producto);
 
--->TABLA DE DEVOLUCIONES: llave primaria id_devolucion
+-->TABLA DE DEVOLUCIONES: llave primaria id_devolucion, llave foranea estado_devolucion de estado_devolucion
 CREATE TABLE devolucion
 (
     id_devolucion INT NOT NULL IDENTITY(1,1), 
@@ -254,6 +259,10 @@ CREATE TABLE devolucion
     CONSTRAINT PK_id_devolucion PRIMARY KEY (id_devolucion)
 );
 
+ALTER TABLE devolucion
+ADD CONSTRAINT FK_estado_devolucion FOREIGN KEY (estado)
+REFERENCES estado_devolucion(id_estado_devolucion);
+
 -->TABLA DE GARANTIAS: llave primaria id_garantia
 CREATE TABLE garantia
 (
@@ -263,5 +272,32 @@ CREATE TABLE garantia
     descripcion VARCHAR(200) NOT NULL,
     CONSTRAINT PK_id_garantia PRIMARY KEY (id_garantia)
 ); 
+
+-->TABLA DE ESTADO PARA PEDIDOS: llave primaria id_estado_pedido
+CREATE TABLE estado_pedido
+(
+    id_estado_pedido TINYINT NOT NULL, 
+    estado VARCHAR(30) NOT NULL,
+    CONSTRAINT PK_id_estado_pedido PRIMARY KEY (id_estado_pedido)
+);
+
+-->Inserción de valores que son fijos en la tabla estado_pedido
+INSERT INTO estado_pedido (id_estado_pedido, estado) VALUES (0, 'Pendiente');
+INSERT INTO estado_pedido (id_estado_pedido, estado) VALUES (1, 'Enviado');
+INSERT INTO estado_pedido (id_estado_pedido, estado) VALUES (2, 'Entregado');
+INSERT INTO estado_pedido (id_estado_pedido, estado) VALUES (3, 'Cancelado');
+
+USE SistemaDeGestion
+CREATE TABLE estado_devolucion
+(
+    id_estado_devolucion TINYINT NOT NULL, 
+    estado VARCHAR(30) NOT NULL,
+    CONSTRAINT PK_id_estado_devolucion PRIMARY KEY (id_estado_devolucion)
+);
+INSERT INTO estado_devolucion (id_estado_devolucion, estado) VALUES (0, 'Pendiente');
+INSERT INTO estado_devolucion (id_estado_devolucion, estado) VALUES (1, 'Aprobada');
+INSERT INTO estado_devolucion (id_estado_devolucion, estado) VALUES (2, 'Rechazada');
+
+SELECT * FROM compra
 
 
