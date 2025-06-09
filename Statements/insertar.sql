@@ -561,7 +561,8 @@ CREATE PROCEDURE InsertarCompra
 (
     @fecha DATE, 
     @cedula INT, 
-    @devolucion INT
+    @devolucion INT,
+    @id_generado INT OUTPUT -- Parámetro de salida para el ID generado automáticamente
 )
 AS
 BEGIN 
@@ -576,6 +577,8 @@ BEGIN
         VALUES (@fecha, @cedula, @devolucion);
 
         SELECT 'Compra insertada correctamente.' AS Mensaje;
+
+        SET @id_generado = SCOPE_IDENTITY(); -- Recupera el ID generado automáticamente para la compra para usarlo en otras inserciones
     END TRY
     BEGIN CATCH
         SELECT 
