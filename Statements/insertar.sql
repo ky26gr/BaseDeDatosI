@@ -576,9 +576,9 @@ BEGIN
         INSERT INTO compra(fecha, cedula, devolucion)
         VALUES (@fecha, @cedula, @devolucion);
 
-        SELECT 'Compra insertada correctamente.' AS Mensaje;
-
         SET @id_generado = SCOPE_IDENTITY(); -- Recupera el ID generado automáticamente para la compra para usarlo en otras inserciones
+
+        SELECT 'Compra insertada correctamente.' AS Mensaje;
     END TRY
     BEGIN CATCH
         SELECT 

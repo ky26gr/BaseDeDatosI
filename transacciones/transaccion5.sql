@@ -32,6 +32,7 @@ BEGIN
 
     BEGIN TRY
         DECLARE @id_compra_generada INT;
+        DECLARE @id_generado INT;           -- Variable para almacenar el ID de la compra generada
 
         -- 1. Registrar nueva persona 
         EXEC [dbo].[InsertarPersona]
@@ -86,10 +87,11 @@ BEGIN
         EXEC [dbo].[InsertarCompra]
             @fecha = @fecha_compra,
             @cedula = @cedula_nueva,
-            @devolucion = @id_devolucion_default; 
+            @devolucion = @id_devolucion_default,
+            @id_generado = @id_generado OUTPUT;  -- Salida para obtener el ID de la compra
 
         -- Recupera el ID generado automáticamente para la compra
-        SET @id_compra_generada = SCOPE_IDENTITY(); 
+        SET @id_compra_generada = @id_generado;
         
         -- Verifica que el ID de la compra se haya generado correctamente
         IF @id_compra_generada IS NULL
@@ -140,3 +142,45 @@ BEGIN
     END CATCH
 END;
 GO
+
+-- Datos de prueba para el procedimiento
+EXEC InsetarGarantia @fecha_inicio = '2024-05-21', 
+                    @fecha_fin = '2025-05-21', 
+                    @descripcion = 'Garantía total 1 año';
+
+SELECT * FROM producto;
+SELECT MAX(id_garantia) AS id_garantia FROM garantia;
+
+EXEC InsertarProducto @nombreProducto = 'Monitor LED', 
+                    @precio = 95000.00, 
+                    @marca = 'Samsung', 
+                    @stock = 5, 
+                    @id_categoria = 0, 
+                    @descripcion = 'Monitor de 24 pulgadas Full HD';
+
+-- Se obtiene el ID del producto recién insertado para usarlo en la tecnología
+DECLARE @id_producto_technologia INT;
+SELECT @id_producto_technologia = CAST(MAX(id_producto) AS INT) FROM producto;
+
+--SET IDENTITY_INSERT tecnologia ON;        --En caso de que insercion no funcione
+EXEC InsertarProductoTecnología @id = @id_producto_technologia, 
+@resistencia = 'Alta';
+
+------------------- Ejemplo de uso del procedimiento RegistrarNuevoClienteConCompra -------------------
+EXEC RegistrarNuevoClienteConCompra 
+            @cedula_nueva = 542155587, 
+            @nombre_nuevo = 'María', 
+            @apellido1_nuevo = 'Soto', 
+            @apellido2_nuevo = 'López', 
+            @distrito_nuevo = 1, 
+            @señas_nuevas = 'Frente al parque central', 
+            @telefono_nuevo = '8765-4321', 
+            @correo_nuevo = 'maria.soto@gmail.com',
+
+            @fecha_compra = '2024-05-21', 
+            @id_producto_comprado = 3,      
+            @cantidad_comprada = 1, 
+            @monto_pagado_compra = 95000.00, 
+            @metodo_pago_compra = 'Transferencia', 
+            @id_devolucion_default = NULL, 
+            @id_garantia_default = 2;       
