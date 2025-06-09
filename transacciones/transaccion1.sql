@@ -21,13 +21,13 @@ CREATE PROCEDURE RegistrarCompraCliente
     @id_garantia_param INT = NULL
 AS
 BEGIN
-    SET NOCOUNT ON; 
+    SET NOCOUNT ON; -- Evita que SQL Server devuelva mensajes de conteo de filas
     
     BEGIN TRANSACTION;
 
     BEGIN TRY 
-        DECLARE @id_compra_nueva INT;
-        DECLARE @stock_actual INT;
+        DECLARE @id_compra_nueva INT;   -- Variable para almacenar el ID generado de la compra
+        DECLARE @stock_actual INT;      -- Variable para almacenar el stock actual del producto
 
         -- 1. Verificar si la persona existe. Si no existe se cancela la transacción y pide crearla, usando la transacción 5
         IF NOT EXISTS (SELECT 1 FROM persona WHERE cedula = @cedula_cliente)
@@ -56,7 +56,8 @@ BEGIN
         PRINT 'INFO (SP RegistrarCompraCliente): Stock verificado para producto ID ' + CAST(@id_producto_comprado AS VARCHAR) + '. Disponible: ' + CAST(@stock_actual AS VARCHAR);
 
         DECLARE @id_generado INT;           -- Variable para almacenar el ID de la compra generada
-        -- 3. Insertar en la tabla compra
+
+        -- 3. Insertar en la tabla compra usando el procedimiento modificado que retorna el ID generado
         PRINT 'INFO (SP RegistrarCompraCliente): Insertando en tabla compra...';
         EXEC [dbo].[InsertarCompra]
             @fecha = @fecha_compra,
@@ -66,6 +67,8 @@ BEGIN
         
         SET @id_compra_nueva = @id_generado;  -- Asignar el ID generado a la variable de salida
         PRINT 'INFO (SP RegistrarCompraCliente): Compra registrada con ID ' + CAST(@id_compra_nueva AS VARCHAR);
+        
+        -- Verificar si se obtuvo un ID válido
         IF @id_compra_nueva IS NULL
         BEGIN
             RAISERROR('Error Crítico (SP RegistrarCompraCliente): No se pudo obtener el ID para la nueva compra después de llamar a InsertarCompra.', 16, 1);
@@ -97,17 +100,22 @@ BEGIN
             ROLLBACK TRANSACTION;
             RETURN;
         END
+
+        -- Paso final: Confirmar la transacción
         PRINT 'INFO (SP RegistrarCompraCliente): Stock actualizado.';
         PRINT 'Procedimiento RegistrarCompraCliente completado: Compra registrada exitosamente para cédula ' + CAST(@cedula_cliente AS VARCHAR);
         COMMIT TRANSACTION;
 
     END TRY
     BEGIN CATCH
+
+        -- En caso de error, se captura la excepción y se realiza un rollback
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
         
         PRINT 'Error en Procedimiento RegistrarCompraCliente: Se realizará ROLLBACK.';
         
+        -- Captura de detalles del error
         DECLARE @ErrorMessage_catch NVARCHAR(4000) = ERROR_MESSAGE();
         DECLARE @ErrorSeverity_catch INT = ERROR_SEVERITY();
         DECLARE @ErrorState_catch INT = ERROR_STATE();
@@ -119,6 +127,7 @@ BEGIN
         PRINT '  Procedimiento Origen: ' + ISNULL(@ErrorProcedure_catch, 'N/A');
         PRINT '  Línea: ' + CAST(@ErrorLine_catch AS VARCHAR);
         
+        -- Re-lanzar el error para quien ejecute la SP
         RAISERROR (@ErrorMessage_catch, @ErrorSeverity_catch, @ErrorState_catch);
         RETURN;
     END CATCH
