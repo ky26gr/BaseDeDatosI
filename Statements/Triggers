@@ -1,3 +1,4 @@
+//Trigger 1: Validación lógica 
 CREATE TRIGGER TRG_EvitarDuplicadoProducto
 ON producto
 INSTEAD OF INSERT
@@ -24,6 +25,7 @@ BEGIN
     END
 END;
 
+//Trigger 2: Creación de logs al insertar una compra
 CREATE TABLE log_compras (
     id_log INT IDENTITY(1,1) PRIMARY KEY,
     id_compra INT,
