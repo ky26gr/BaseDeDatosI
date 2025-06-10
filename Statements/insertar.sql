@@ -1,7 +1,7 @@
 -->Todos los procedimeitnos de INSERCIÓN de la base de datos SistemaDeGestion, 
 -->Con un ejemplo de inserción al final de cada uno para asegurar que funciona
 
-USE SistemaDeGestion
+USE SistemaDeGestion;
 
 -->Visualizar las tablas de la base de datos junto con el tipo de dato de cada columna, para consulta
 SELECT 
@@ -649,11 +649,13 @@ SELECT * FROM devolucion
 -- que las fechas estén dentro de un rango válido (2000-01-01 a fecha actual), y que la descripción no esté vacía.
 --> El id de la tabla es autoincremental 
 GO 
-CREATE PROCEDURE InsetarGarantia
+
+CREATE PROCEDURE InsertarGarantia
 (
     @fecha_inicio DATE, 
     @fecha_fin DATE,
-    @descripcion VARCHAR(200)
+    @descripcion VARCHAR(200),
+    @id_generado INT OUTPUT -- Parámetro de salida para el ID generado automáticamente
 )
 AS 
 BEGIN 
@@ -679,6 +681,8 @@ BEGIN
         INSERT INTO garantia(fecha_inicio, fecha_fin, descripcion)
         VALUES (@fecha_inicio, @fecha_fin, @descripcion);
 
+        SET @id_generado = SCOPE_IDENTITY(); -- Recupera el ID generado automáticamente para la garantía
+
         SELECT 'Garantía insertada correctamente.' AS Mensaje;
     END TRY
     BEGIN CATCH
@@ -688,7 +692,7 @@ BEGIN
     END CATCH
 END;
 
-EXEC InsetarGarantia 
+EXEC InsertarGarantia 
     @fecha_inicio = '2023-01-01', 
     @fecha_fin = '2024-01-01', 
     @descripcion = 'Garantía de prueba';
